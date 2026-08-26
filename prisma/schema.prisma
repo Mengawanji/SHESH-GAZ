@@ -1,0 +1,60 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  brand     String
+  size      String
+  price     Decimal
+  inStock   Boolean  @default(true) @map("in_stock")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  orders    Order[]
+
+  @@map("products")
+}
+
+model Conversation {
+  id            Int       @id @default(autoincrement())
+  customerPhone String    @map("customer_phone")
+  state         String    @default("greeting")
+  context       Json      @default("{}")
+  humanTakeover Boolean   @default(false) @map("human_takeover")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  messages      Message[]
+  orders        Order[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int          @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           String // 'user' | 'assistant' | 'system' | 'tool'
+  content        String
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@map("messages")
+}
+
+model Order {
+  id               Int          @id @default(autoincrement())
+  conversationId   Int          @map("conversation_id")
+  conversation     Conversation @relation(fields: [conversationId], references: [id])
+  customerPhone    String       @map("customer_phone")
+  productId        Int?         @map("product_id")
+  product          Product?     @relation(fields: [productId], references: [id])
+  quantity         Int
+  deliveryType     String?      @map("delivery_type") // 'delivery' | 'pickup'
+  deliveryAddress  String?      @map("delivery_address")
+  status           String       @default("pending") // pending | confirmed | fulfilled | cancelled
+  createdAt        DateTime     @default(now()) @map("created_at")
+
+  @@map("orders")
+}
