@@ -14,4 +14,5 @@ export interface OrderContext {
   quantity?: number;
   deliveryType?: 'delivery' | 'pickup';
   address?: string;
+  [key: string]: unknown; 
 }
