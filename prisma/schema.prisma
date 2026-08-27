@@ -58,3 +58,13 @@ model Order {
 
   @@map("orders")
 }
+
+model KnowledgeChunk {
+  id        Int      @id @default(autoincrement())
+  content   String
+  metadata  Json     @default("{}")
+  embedding Unsupported("vector(1536)")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("knowledge_chunks")
+}

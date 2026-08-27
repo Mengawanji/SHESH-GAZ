@@ -13,10 +13,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     const adapter = new PrismaPg({
       connectionString,
-      // Restores permissive self-signed cert handling that older pg
-      // versions used by default. Fine for local/dev or a trusted managed
-      // provider; for production, prefer supplying a proper CA cert and
-      // removing this instead.
       ssl: { rejectUnauthorized: false },
     });
 

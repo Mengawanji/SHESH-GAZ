@@ -37,3 +37,8 @@ export type Message = Prisma.MessageModel
  * 
  */
 export type Order = Prisma.OrderModel
+/**
+ * Model KnowledgeChunk
+ * 
+ */
+export type KnowledgeChunk = Prisma.KnowledgeChunkModel
