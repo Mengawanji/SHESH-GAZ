@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { ProductsModule } from './products/products.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ProductsModule } from './products/products.module';
     PrismaModule,
     WhatsappModule,
     ProductsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
