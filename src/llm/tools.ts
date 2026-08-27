@@ -9,7 +9,7 @@ export const TOOL_DEFINITIONS = [
         type: 'object',
         properties: {
           brand: { type: 'string', enum: ['Gloca', 'Total', 'Tradex'] },
-          size: { type: 'string', description: "e.g. '6kg', '12.5kg', '25kg'. Omit to list all sizes." },
+          size: { type: 'string', description: "e.g. '6kg', '12.5kg'. Omit to list all sizes." },
         },
         required: ['brand'],
       },
@@ -25,7 +25,7 @@ export const TOOL_DEFINITIONS = [
         type: 'object',
         properties: {
           brand: { type: 'string' },
-          size: { type: 'string' },
+          size: { type: 'string', enum: ['6kg', '12.5kg'] },
           quantity: { type: 'number' },
           deliveryType: { type: 'string', enum: ['delivery', 'pickup'] },
           address: { type: 'string', description: 'Required if deliveryType is delivery.' },

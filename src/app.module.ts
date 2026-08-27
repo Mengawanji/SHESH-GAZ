@@ -7,6 +7,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ConversationModule } from './conversation/conversation.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ProductsModule,
     OrdersModule,
     NotificationsModule,
+    ConversationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

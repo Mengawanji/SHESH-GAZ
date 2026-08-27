@@ -16,12 +16,12 @@ const KNOWLEDGE_ENTRIES: { content: string; metadata: Record<string, unknown> }[
   },
   {
     content:
-      'Gloca gas cylinders are known for their reliable valve safety and are one of the most popular household brands we stock, available in 6kg, 12.5kg and 25kg sizes.',
+      'Gloca gas cylinders are known for their reliable valve safety and are one of the most popular household brands we stock, available in 6kg and 12.5kg sizes.',
     metadata: { type: 'brand_info', brand: 'Gloca' },
   },
   {
     content:
-      'Total gas cylinders are widely trusted for consistent quality and are available in 6kg, 12.5kg and 25kg sizes, popular with both households and small restaurants.',
+      'Total gas cylinders are widely trusted for consistent quality and are available in 6kg and 12.5kg sizes, popular with both households and small restaurants.',
     metadata: { type: 'brand_info', brand: 'Total' },
   },
   {
