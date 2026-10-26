@@ -8,6 +8,8 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ConversationModule } from './conversation/conversation.module';
+import { LegalModule } from './legal/legal.module';
+import { LegalController } from './legal/legal.controller';
 
 @Module({
   imports: [
@@ -20,8 +22,9 @@ import { ConversationModule } from './conversation/conversation.module';
     OrdersModule,
     NotificationsModule,
     ConversationModule,
+    LegalModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, LegalController],
   providers: [AppService],
 })
 export class AppModule {}
