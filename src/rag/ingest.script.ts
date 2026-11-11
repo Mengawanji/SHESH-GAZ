@@ -16,8 +16,8 @@ const KNOWLEDGE_ENTRIES: { content: string; metadata: Record<string, unknown> }[
   },
   {
     content:
-      'Gloca gas cylinders are known for their reliable valve safety and are one of the most popular household brands we stock, available in 6kg and 12.5kg sizes.',
-    metadata: { type: 'brand_info', brand: 'Gloca' },
+      'Glocal gas cylinders are known for their reliable valve safety and are one of the most popular household brands we stock, available in 6kg and 12.5kg sizes.',
+    metadata: { type: 'brand_info', brand: 'Glocal' },
   },
   {
     content:

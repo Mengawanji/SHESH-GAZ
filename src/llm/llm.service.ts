@@ -18,7 +18,7 @@ export class LlmService {
 
   constructor(private readonly config: ConfigService) {
     this.groq = new Groq({ apiKey: this.config.get<string>('GROQ_API_KEY') });
-    this.model = this.config.get<string>('GROQ_MODEL', 'llama-3.3-70b-versatile');
+    this.model = this.config.get<string>('GROQ_MODEL', 'openai/gpt-oss-120b');
   }
 
   async chat(messages: ChatMessage[]) {

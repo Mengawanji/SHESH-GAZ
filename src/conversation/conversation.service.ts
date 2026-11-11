@@ -4,7 +4,6 @@ import { RetrievalService } from '../rag/retrieval.service';
 import { LlmService, ChatMessage } from '../llm/llm.service';
 import { buildSystemPrompt } from '../llm/tools';
 import { ProductsService } from '../products/products.service';
-import { OrdersService } from '../orders/orders.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationState, OrderContext } from './conversation-state';
 
@@ -20,7 +19,6 @@ export class ConversationService {
     private readonly retrieval: RetrievalService,
     private readonly llm: LlmService,
     private readonly products: ProductsService,
-    private readonly orders: OrdersService,
     private readonly notifications: NotificationsService,
   ) {}
 
@@ -84,17 +82,19 @@ export class ConversationService {
       for (const call of message.tool_calls) {
         const args = JSON.parse(call.function.arguments || '{}');
         const result = await this.executeTool(call.function.name, args, conversationId, customerPhone);
+        const escalated = Boolean((result as { escalated?: boolean })?.escalated);
 
         if (call.function.name === 'createOrder') {
-          state = ConversationState.ORDER_PLACED;
           workingContext = { ...workingContext, ...args };
-        } else if (call.function.name === 'escalateToHuman') {
+          if (escalated) state = ConversationState.ESCALATED;
+        } else if (call.function.name === 'escalateToHuman' || escalated) {
           state = ConversationState.ESCALATED;
-          await this.prisma.conversation.update({
-            where: { id: conversationId },
-            data: { humanTakeover: true },
-          });
         } else if (call.function.name === 'checkAvailability') {
+          workingContext = {
+            ...workingContext,
+            brand: args.brand,
+            ...(args.size ? { size: args.size } : {}),
+          };
           state = ConversationState.BROWSING;
         }
 
@@ -121,30 +121,74 @@ export class ConversationService {
     customerPhone: string,
   ): Promise<unknown> {
     switch (name) {
-      case 'checkAvailability':
-        return this.products.checkAvailability(args.brand, args.size);
+      case 'checkAvailability': {
+        const result = await this.products.checkAvailability(args.brand, args.size);
+        if (args.size && result.found && result.available) {
+          await this.escalate(
+            conversationId,
+            customerPhone,
+            `Customer wants ${args.brand} ${args.size} (in stock)`,
+          );
+          return {
+            ...result,
+            escalated: true,
+            message: `${args.brand} ${args.size} is available. A team member will take over this chat.`,
+          };
+        }
+        if (args.size && result.found && !result.available) {
+          return {
+            ...result,
+            escalated: false,
+            message: `${args.brand} ${args.size} is currently unavailable.`,
+          };
+        }
+        return { ...result, escalated: false };
+      }
 
       case 'createOrder': {
-        const order = await this.orders.createOrder({
+        const availability = await this.products.checkAvailability(args.brand, args.size);
+        if (!availability.found || !availability.available) {
+          return {
+            created: false,
+            available: false,
+            escalated: false,
+            message: availability.found
+              ? `${args.brand} ${args.size} is currently unavailable. Do not place an order.`
+              : availability.message,
+          };
+        }
+
+        await this.escalate(
           conversationId,
           customerPhone,
-          brand: args.brand,
-          size: args.size,
-          quantity: args.quantity,
-          deliveryType: args.deliveryType,
-          address: args.address,
-        });
-        await this.notifications.notifyNewOrder({ ...order, customerPhone });
-        return order;
+          `Customer wants ${args.brand} ${args.size} (in stock)`,
+        );
+        return {
+          created: false,
+          available: true,
+          escalated: true,
+          message: 'This sale is handed to a human agent. Do not create an order.',
+        };
       }
 
       case 'escalateToHuman':
-        await this.notifications.notifyEscalation(customerPhone, args.reason);
+        await this.escalate(conversationId, customerPhone, args.reason);
         return { escalated: true };
 
       default:
         this.logger.warn(`Unknown tool call: ${name}`);
         return { error: `Unknown tool: ${name}` };
+    }
+  }
+
+  private async escalate(conversationId: number, customerPhone: string, reason: string) {
+    const updated = await this.prisma.conversation.updateMany({
+      where: { id: conversationId, humanTakeover: false },
+      data: { humanTakeover: true },
+    });
+
+    if (updated.count > 0) {
+      await this.notifications.notifyEscalation(customerPhone, reason);
     }
   }
 

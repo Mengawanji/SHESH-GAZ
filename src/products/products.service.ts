@@ -1,9 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async listProducts() {
+    const products = await this.prisma.product.findMany({
+      orderBy: [{ brand: 'asc' }, { size: 'asc' }],
+    });
+
+    return products.map((p) => ({
+      id: p.id,
+      brand: p.brand,
+      size: p.size,
+      price: Number(p.price),
+      inStock: p.inStock,
+      updatedAt: p.updatedAt,
+    }));
+  }
 
   async checkAvailability(brand: string, size?: string) {
     const products = await this.prisma.product.findMany({
@@ -11,20 +26,30 @@ export class ProductsService {
         brand: { equals: brand, mode: 'insensitive' },
         ...(size ? { size: { equals: size, mode: 'insensitive' } } : {}),
       },
+      orderBy: { size: 'asc' },
     });
 
     if (!products.length) {
-      return { found: false, message: `We don't currently list ${brand}${size ? ' ' + size : ''}.` };
+      return {
+        found: false,
+        available: false,
+        message: `We don't currently list ${brand}${size ? ' ' + size : ''}.`,
+        options: [],
+      };
     }
+
+    const options = products.map((p) => ({
+      id: p.id,
+      brand: p.brand,
+      size: p.size,
+      price: Number(p.price),
+      inStock: p.inStock,
+    }));
 
     return {
       found: true,
-      options: products.map((p) => ({
-        brand: p.brand,
-        size: p.size,
-        price: Number(p.price),
-        inStock: p.inStock,
-      })),
+      available: options.some((p) => p.inStock),
+      options,
     };
   }
 
@@ -37,14 +62,23 @@ export class ProductsService {
     });
   }
 
-  /** Used by the supplier's admin toggle to mark a product available/unavailable. */
-  async setAvailability(brand: string, size: string, inStock: boolean) {
-    return this.prisma.product.updateMany({
-      where: {
-        brand: { equals: brand, mode: 'insensitive' },
-        size: { equals: size, mode: 'insensitive' },
-      },
-      data: { inStock },
-    });
+  async setAvailabilityById(id: number, inStock: boolean) {
+    try {
+      const product = await this.prisma.product.update({
+        where: { id },
+        data: { inStock },
+      });
+
+      return {
+        id: product.id,
+        brand: product.brand,
+        size: product.size,
+        price: Number(product.price),
+        inStock: product.inStock,
+        updatedAt: product.updatedAt,
+      };
+    } catch {
+      throw new NotFoundException(`Product ${id} not found.`);
+    }
   }
 }

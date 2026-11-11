@@ -7,8 +7,8 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const catalog = [
-    { brand: 'Gloca', size: '6kg', price: 3500 },
-    { brand: 'Gloca', size: '12.5kg', price: 6500 },
+    { brand: 'Glocal', size: '6kg', price: 3500 },
+    { brand: 'Glocal', size: '12.5kg', price: 6500 },
     { brand: 'Total', size: '6kg', price: 3500 },
     { brand: 'Total', size: '12.5kg', price: 6500 },
     { brand: 'Tradex', size: '6kg', price: 3500 },
@@ -16,7 +16,11 @@ async function main() {
   ];
 
   for (const item of catalog) {
-    await prisma.product.create({ data: { ...item, inStock: true } });
+    await prisma.product.upsert({
+      where: { brand_size: { brand: item.brand, size: item.size } },
+      update: { price: item.price },
+      create: { ...item, inStock: true },
+    });
   }
 
   console.log(`Seeded ${catalog.length} products.`);

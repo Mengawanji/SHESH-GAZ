@@ -22,11 +22,27 @@ export class OrdersService {
   async createOrder(input: CreateOrderInput) {
     const product = await this.products.findProduct(input.brand, input.size);
 
+    if (!product) {
+      return {
+        created: false as const,
+        available: false,
+        message: `We don't currently list ${input.brand} ${input.size}.`,
+      };
+    }
+
+    if (!product.inStock) {
+      return {
+        created: false as const,
+        available: false,
+        message: `${product.brand} ${product.size} is currently unavailable.`,
+      };
+    }
+
     const order = await this.prisma.order.create({
       data: {
         conversationId: input.conversationId,
         customerPhone: input.customerPhone,
-        productId: product?.id,
+        productId: product.id,
         quantity: input.quantity,
         deliveryType: input.deliveryType,
         deliveryAddress: input.address,
@@ -35,12 +51,13 @@ export class OrdersService {
     });
 
     return {
+      created: true as const,
       orderId: order.id,
       brand: input.brand,
       size: input.size,
       quantity: input.quantity,
-      unitPrice: product ? Number(product.price) : null,
-      total: product ? Number(product.price) * input.quantity : null,
+      unitPrice: Number(product.price),
+      total: Number(product.price) * input.quantity,
       deliveryType: input.deliveryType,
       address: input.address ?? null,
     };

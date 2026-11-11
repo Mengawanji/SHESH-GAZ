@@ -16,6 +16,7 @@ model Product {
   updatedAt DateTime @updatedAt @map("updated_at")
   orders    Order[]
 
+  @@unique([brand, size])
   @@map("products")
 }
 

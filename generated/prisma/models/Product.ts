@@ -243,6 +243,7 @@ export type ProductOrderByWithRelationInput = {
 
 export type ProductWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  brand_size?: Prisma.ProductBrandSizeCompoundUniqueInput
   AND?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
   OR?: Prisma.ProductWhereInput[]
   NOT?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
@@ -252,7 +253,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   inStock?: Prisma.BoolFilter<"Product"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   orders?: Prisma.OrderListRelationFilter
-}, "id">
+}, "id" | "brand_size">
 
 export type ProductOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -342,6 +343,11 @@ export type ProductUncheckedUpdateManyInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   inStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ProductBrandSizeCompoundUniqueInput = {
+  brand: string
+  size: string
 }
 
 export type ProductCountOrderByAggregateInput = {
